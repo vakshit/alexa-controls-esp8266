@@ -15,7 +15,7 @@ Note: This project is created using [PlatformIO](https://platformio.org/) and [V
 git clone https://github.com/vakshit/alexa-controls-esp8266.git
 ```
 
-- Change the device names and pin in the `src/main.cpp` file
+- Change the device names, pin numbers, SSID and password in the `src/main.cpp` file
 - Use the PlatformIO VSCode extension to upload to the device or from the terminal run
 ```bash
 platformio run --target upload
