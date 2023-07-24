@@ -1,24 +1,38 @@
-#include <Arduino.h>
-#include <fauxmoESP.h>
-#include <wifi.hpp>
+#include <setup.hpp>
+#include <utils.hpp>
 
-fauxmoESP fauxmo;
+std::shared_ptr<fauxmoESP> alexa = std::make_shared<fauxmoESP>();
+short counter = 0;
+boolean wifi_connected = false;
+Device devices[] = {Device{"test light", 4}, Device{"test fan", 5}};
 
 void setup() {
+  // initiaie connection
+  Serial.begin(BAUD_RATE);
 
-    Serial.begin(115200);
-    connectToWiFi("JioFiber-4", "uzumymwalks");
-    fauxmo.addDevice("test light");
+  // initialize the setup class
+  Setup setup = Setup(alexa, devices, 2);
 
-    fauxmo.setPort(80); // required for gen3 devices
-    fauxmo.enable(true);
+  // connect to WiFi
+  wifi_connected = Setup::connect_wifi("ssid", "password");
+  if (wifi_connected) {
+    // setup devices and their pinModes
+    setup.setup_devices();
 
-    fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
-        Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
-    });
-
+    // handle actions
+    setup.handle_actions();
+  }
 }
 
 void loop() {
-    fauxmo.handle();
+  if (wifi_connected) {
+    alexa->handle();
+  } else {
+    if (counter < 10) {
+      blink_once(500);
+      counter++;
+    }
+  }
+  if (counter >= 10)
+    ESP.deepSleep(0);
 }
